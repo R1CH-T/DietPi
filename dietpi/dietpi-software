@@ -366,6 +366,7 @@ _EOF_
 			"────Advanced Networking───────────────────────────────────" #17
 			"────Home Automation───────────────────────────────────────" #18
 			"────Printing──────────────────────────────────────────────" #19
+			"____Voice Control_________________________________________" #20
 
 		)
 
@@ -1953,6 +1954,42 @@ _EOF_
 			 aSOFTWARE_ONLINEDOC_URL[$index_current]='f=8&t=5&p=7958#p7958'
    aSOFTWARE_REQUIRES_BUILDESSENTIAL[$index_current]=1
    			  aSOFTWARE_REQUIRES_GIT[$index_current]=1 # Required for updates
+			  
+		#------------------
+
+
+		#Voice Control
+		#--------------------------------------------------------------------------------
+		index_current=154
+
+				 aSOFTWARE_WHIP_NAME[$index_current]='Google Assistant SDK'
+				 aSOFTWARE_WHIP_DESC[$index_current]='Google Assistant SDK for any device'
+			aSOFTWARE_CATEGORY_INDEX[$index_current]=20
+					  aSOFTWARE_TYPE[$index_current]=0
+			 aSOFTWARE_ONLINEDOC_URL[$index_current]='???????'
+				aSOFTWARE_REQUIRES_ALSA[$index_current]=1
+					
+		#------------------
+		index_current=155
+
+				 aSOFTWARE_WHIP_NAME[$index_current]='Google Assistant AIY Kit'
+				 aSOFTWARE_WHIP_DESC[$index_current]='Google AIY Kit for Raspberry Pi'
+			aSOFTWARE_CATEGORY_INDEX[$index_current]=20
+					  aSOFTWARE_TYPE[$index_current]=0
+			 aSOFTWARE_ONLINEDOC_URL[$index_current]='???????'
+			 	aSOFTWARE_REQUIRES_GIT[$index_current]=1
+				aSOFTWARE_REQUIRES_ALSA[$index_current]=1
+		
+		# - Disabled for All non-rpi
+		for ((i=10; i<=$MAX_HW_MODEL; i++))
+		do
+
+			aSOFTWARE_AVAIL_HW_MODEL[$index_current,$i]=0
+
+		done
+		
+		#------------------
+
 
 		#--------------------------------------------------------------------------------
 		#Additional linux software items
@@ -6655,6 +6692,80 @@ _EOF_
 			fi
 
 		fi
+
+		#GoogleVoiceSDK
+		INSTALLING_INDEX=154
+		if (( ${aSOFTWARE_INSTALL_STATE[$INSTALLING_INDEX]} == 1 )); then
+
+			Banner_Installing
+			
+			sudo apt-get update
+			sudo apt-get install python3-dev python3-venv
+			
+			python3 -m venv env
+			env/bin/python -m pip install --upgrade pip setuptools
+			source env/bin/activate
+			
+			python -m pip install --upgrade google-assistant-library
+			
+			python -m pip install --upgrade google-auth-oauthlib[tool]
+						
+			INSTALL_URL_ADDRESS='https://www.googleapis.com/auth/assistant-sdk-prototype'
+			/DietPi/dietpi/func/check_connection "$INSTALL_URL_ADDRESS"
+
+			if (( $? == 0 )); then
+			
+			cp /boot/client_secret_*.json "$FP_DIETPI_USERDATA_DIRECTORY"/assistant.json
+			
+			google-oauthlib-tool --client-secrets "$FP_DIETPI_USERDATA_DIRECTORY"/assistant.json --scope "$INSTALL_URL_ADDRESS" --save --headless
+			
+			
+			
+			else
+
+				Error_NoConnection_NoInstall
+
+			fi
+
+		fi
+		
+		#GoogleVoiceAIY
+		INSTALLING_INDEX=155
+		if (( ${aSOFTWARE_INSTALL_STATE[$INSTALLING_INDEX]} == 1 )); then
+
+			Banner_Installing
+
+			INSTALL_URL_ADDRESS='https://github.com/google/aiyprojects-raspbian.git'
+			/DietPi/dietpi/func/check_connection "$INSTALL_URL_ADDRESS"
+
+			if (( $? == 0 )); then
+
+				AGI python python-dev
+
+				git clone "$INSTALL_URL_ADDRESS" "$FP_DIETPI_USERDATA_DIRECTORY"/voice-recognizer-raspi
+
+				cd "$FP_DIETPI_USERDATA_DIRECTORY"/voice-recognizer-raspi
+				
+				scripts/install-deps.sh
+				scripts/install-services.sh
+				
+				apt-get update
+				apt-get install raspberrypi-kernel
+				scripts/configure-driver.sh
+				scripts/install-alsa-config.sh
+				
+				cp /boot/client_secret_*.json "$FP_DIETPI_USERDATA_DIRECTORY"/assistant.json
+				
+				src/main.py
+
+			else
+
+				Error_NoConnection_NoInstall
+
+			fi
+
+		fi
+
 
 	}
 
