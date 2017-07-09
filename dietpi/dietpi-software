@@ -1977,8 +1977,9 @@ _EOF_
 			aSOFTWARE_CATEGORY_INDEX[$index_current]=20
 					  aSOFTWARE_TYPE[$index_current]=0
 			 aSOFTWARE_ONLINEDOC_URL[$index_current]='???????'
-			 	aSOFTWARE_REQUIRES_GIT[$index_current]=1
 				aSOFTWARE_REQUIRES_ALSA[$index_current]=1
+				aSOFTWARE_REQUIRES_BUILDESSENTIAL[$index_current]=1
+				aSOFTWARE_REQUIRES_GIT[$index_current]=1
 		
 		# - Disabled for All non-rpi
 		for ((i=10; i<=$MAX_HW_MODEL; i++))
@@ -6748,7 +6749,7 @@ _EOF_
 				scripts/install-deps.sh
 				scripts/install-services.sh
 				
-				AGI install raspberrypi-kernel
+#				AGI install raspberrypi-kernel
 				scripts/configure-driver.sh
 				scripts/install-alsa-config.sh
 				
